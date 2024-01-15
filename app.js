@@ -1,9 +1,15 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require('morgan');
 
 const app = express();
 
-// use middleware
+// 1. MIDDLEWARES
+
+// use 3rd party middleware for logs
+app.use(morgan('dev'));
+
+// use middleware for parsing data from the body
 app.use(express.json());
 
 // define our own middleware
@@ -16,7 +22,8 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
-// router handlers
+// 2. ROUTER HANDLERS
+
 const getAllTours = (req, res) => {
   console.log(req.requestTime);
   res.status(200).json({
@@ -97,7 +104,8 @@ const deleteTour = (req, res) => {
 // app.patch('/api/v1/tours/:id', updateTour);
 // app.delete('/api/v1/tours/:id', deleteTour);
 
-// refactor routers to reduce url's existence
+// 3. ROUTERS
+
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 app
@@ -105,6 +113,8 @@ app
   .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
+
+// 4. START SERVER
 
 port = 3000;
 app.listen(port, () => {
