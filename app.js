@@ -8,10 +8,15 @@ const app = express();
 // 1. MIDDLEWARES
 
 // use 3rd party middleware for logs
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // use middleware for parsing data from the body
 app.use(express.json());
+
+// use middleware for serving static files
+app.use(express.static(`${__dirname}/public`));
 
 // define our own middleware
 app.use((req, res, next) => {
