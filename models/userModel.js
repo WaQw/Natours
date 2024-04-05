@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -23,8 +24,27 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, 'Please confirm your password!'],
+    required: [true, 'Please confirm your password!'], // required input, but not required to be persisted in db
+    validate: {
+      validator: function (val) {
+        return val === this.password; // false then error
+      },
+      message: 'Passwords are not the same!',
+    },
   },
+});
+
+// Password Encryption
+// pre save middleware (between getting the data and saving it into db)
+userSchema.pre('save', async function (next) {
+  // if password does not change, maybe email/name change
+  if (!this.isModified('password')) return next();
+
+  this.password = await bcrypt.hash(this.password, 12);
+
+  this.passwordConfirm = undefined;
+
+  next();
 });
 
 const User = mongoose.model('User', userSchema);
